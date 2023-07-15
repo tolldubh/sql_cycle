@@ -5,7 +5,7 @@ intended).
 */
 
 CREATE TABLE `cycle_metrics` (
-  `cycle_id` int DEFAULT NULL,
+  `cycle_id` int NOT NULL,
   `cycle_duration` int DEFAULT NULL,
   `period_duration` int DEFAULT NULL,
   `cycle_next_expected` date DEFAULT NULL,
@@ -15,15 +15,20 @@ CREATE TABLE `cycle_metrics` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `days_off` int DEFAULT NULL,
-  `period_days_off` int DEFAULT NULL
+  `period_days_off` int DEFAULT NULL,
+  PRIMARY KEY (`cycle_id`),
+  UNIQUE KEY `cycle_id_UNIQUE` (`cycle_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 -- initial values
 INSERT INTO health.cycle_metrics (cycle_id, period_duration)
-SELECT cycle_id, count(*) as period_duration
+SELECT cycle_id, period_duration
+from (SELECT cycle_id, count(*) as period_duration
 from health.cycle
-group by cycle_id;
+group by cycle_id) duration
+on duplicate key update period_duration = duration.period_duration;
+
 
 -- add start_date
 update health.cycle_metrics cm
