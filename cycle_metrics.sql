@@ -96,3 +96,13 @@ set cm.days_off = datediff(cycle_next_actual, cycle_next_expected);
 update health.cycle_metrics set period_days_off = period_duration - period_duration_avg;
 
 commit;
+
+CREATE VIEW health.cycle_day1 AS
+SELECT
+    c.cycle_id AS cycle_id,
+    c.cycle_date AS cycle_date
+FROM
+    health.cycle c
+    LEFT JOIN health.cycle c2 ON c.cycle_date = DATEADD(day, 1, c2.cycle_date)
+WHERE
+    c2.cycle_date IS NULL;
