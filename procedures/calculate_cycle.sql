@@ -1,24 +1,6 @@
-/* The point of this table is to have cumulative metrics for cycle
-tracking: what has been the trend so far, and how far have you
-deviated from your normal? It makes outliers easier to spot (pun
-intended).
-*/
-
-CREATE TABLE cycle_metrics (
-  cycle_id INT NOT NULL,
-  cycle_duration INT NULL,
-  period_duration INT NULL,
-  cycle_next_expected DATE NULL,
-  cycle_next_actual DATE NULL,
-  cycle_duration_avg INT NULL,
-  period_duration_avg INT NULL,
-  start_date DATE NULL,
-  end_date DATE NULL,
-  days_off INT NULL,
-  period_days_off INT NULL,
-  PRIMARY KEY (cycle_id),
-  UNIQUE (cycle_id)
-);
+create procedure health.calculate_cycle 
+as
+begin
 
 -- initial values
 MERGE INTO health.cycle_metrics AS target
@@ -43,7 +25,7 @@ WITH days_until AS (
     SELECT
         t1.cycle_id,
         DATEDIFF(
-            DAY, -- Specify the date part (DAY)
+            DAY,
             (SELECT MIN(t2.cycle_date) FROM health.cycle_day1 t2 WHERE t2.cycle_date > t1.cycle_date),
             t1.cycle_date
         ) * -1 AS days_until_next
@@ -100,4 +82,4 @@ SET days_off = DATEDIFF(day, cycle_next_expected, cycle_next_actual);
 UPDATE health.cycle_metrics
 SET period_days_off = period_duration - period_duration_avg;
 
-select * from health.cycle;
+end;
